@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-type CellValue = "X" | "O" | null;
+export type CellValue = "X" | "O" | null;
 
 const winningPatterns = [
   [0, 1, 2],
@@ -22,9 +22,14 @@ export type GameCopy = {
   botTurn: string;
 };
 
+export type WinSummary = {
+  board: CellValue[];
+  moves: number[];
+};
+
 type Props = {
   copy: GameCopy;
-  onWin: () => void;
+  onWin: (summary: WinSummary) => void;
   onLose: () => void;
   onDraw?: () => void;
 };
@@ -34,59 +39,57 @@ export function TicTacToe({ copy, onWin, onLose, onDraw }: Props) {
   const [status, setStatus] = useState<string>("");
   const [isPlayerTurn, setIsPlayerTurn] = useState(true);
   const [isLocked, setIsLocked] = useState(false);
+  const [moves, setMoves] = useState<number[]>([]);
 
   const winner = useMemo(() => calculateWinner(board), [board]);
   const isBoardFull = board.every(Boolean);
 
   useEffect(() => {
-    if (winner || isBoardFull) {
-      setIsLocked(true);
-      if (winner === "X") {
-        setStatus(copy.winPending);
-        onWin();
-      } else if (winner === "O") {
-        onLose();
-        setStatus(copy.loseText);
-      } else if (!winner && isBoardFull) {
-        onDraw?.();
-        setStatus(copy.drawText);
-      }
+    if (isLocked || (!winner && !isBoardFull)) {
+      return;
     }
-  }, [winner, isBoardFull, copy, onWin, onLose, onDraw]);
+    setIsLocked(true);
+    if (winner === "X") {
+      setStatus(copy.winPending);
+      onWin({ board: [...board], moves: [...moves] });
+    } else if (winner === "O") {
+      onLose();
+      setStatus(copy.loseText);
+    } else if (!winner && isBoardFull) {
+      onDraw?.();
+      setStatus(copy.drawText);
+    }
+  }, [winner, isBoardFull, copy, onWin, onLose, onDraw, board, moves, isLocked]);
 
   useEffect(() => {
     if (!isPlayerTurn && !winner && !isBoardFull) {
       const timeoutId = window.setTimeout(() => {
-        setBoard((current) => {
-          const nextBoard = [...current];
-          const emptyCells = nextBoard
-            .map((value, index) => (value === null ? index : null))
-            .filter((index): index is number => index !== null);
-          if (emptyCells.length === 0) {
-            return nextBoard;
-          }
-          const botMoveIndex = chooseBotMove(nextBoard);
-          nextBoard[botMoveIndex] = "O";
-          return nextBoard;
-        });
+        const nextBoard = [...board];
+        const botMoveIndex = chooseBotMove(nextBoard);
+        nextBoard[botMoveIndex] = "O";
+        setBoard(nextBoard);
+        setMoves((prev) => [...prev, botMoveIndex]);
         setIsPlayerTurn(true);
       }, 220);
 
       return () => window.clearTimeout(timeoutId);
     }
     return;
-  }, [isPlayerTurn, winner, isBoardFull]);
+  }, [isPlayerTurn, winner, isBoardFull, board]);
 
   const handleCellClick = (index: number) => {
     if (isLocked || board[index] !== null || !isPlayerTurn) {
       return;
     }
 
+    console.log("Bruh")
+
     setBoard((current) => {
       const nextBoard = [...current];
       nextBoard[index] = "X";
       return nextBoard;
     });
+    setMoves((prev) => [...prev, index]);
     setIsPlayerTurn(false);
     setStatus("");
   };
@@ -96,6 +99,7 @@ export function TicTacToe({ copy, onWin, onLose, onDraw }: Props) {
     setIsPlayerTurn(true);
     setIsLocked(false);
     setStatus("");
+    setMoves([]);
   };
 
   return (

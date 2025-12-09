@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { TicTacToe } from "./components/TicTacToe";
+import { TicTacToe, WinSummary } from "./components/TicTacToe";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 import { fallbackLocale, LocaleKey, translations } from "./translations";
 
@@ -35,11 +35,12 @@ type Theme = (typeof themes)[number];
 
 function App() {
   const user = useMemo(() => decodePayload(), []);
-  const userKey = user?.telegram_id?.toString() ?? "guest";
   const [locale, setLocale] = useLocalStorage<LocaleKey>("ttt_locale", fallbackLocale);
   const [theme, setTheme] = useLocalStorage<Theme>("ttt_theme", "light");
-  const [lastMessage, setLastMessage] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
+  const [promoCode, setPromoCode] = useState<string | null>(null);
   const telegram = useMemo(() => window.Telegram?.WebApp, []);
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "";
 
   const copy = translations[locale] ?? translations[fallbackLocale];
   const gameCopy = useMemo(
@@ -61,35 +62,69 @@ function App() {
 
   useEffect(() => {
     telegram?.ready();
+    console.log(telegram?.initData)
   }, [telegram]);
 
-  const requestPromoFromBot = useCallback(() => {
-    if (!telegram) {
-      setLastMessage(copy.botUnavailable);
-      return;
-    }
-    try {
-      console.log("Отправляю sendData");
-      telegram.sendData(
-        JSON.stringify({
-          event: "promo_request",
-          userKey,
-          timestamp: Date.now()
-        })
-      );
-      telegram.HapticFeedback?.impactOccurred?.("soft");
-      setLastMessage(copy.promoRequested);
-    } catch {
-      setLastMessage(copy.botUnavailable);
-    }
-  }, [telegram, copy, userKey]);
+  const submitWin = useCallback(
+    async (summary: WinSummary) => {
+      if (!user?.telegram_id) {
+        setStatusMessage(copy.userUnknown);
+        return;
+      }
+      if (!telegram?.initData) {
+        setStatusMessage(copy.initDataMissing);
+        return;
+      }
+      if (!apiBaseUrl) {
+        setStatusMessage(copy.apiUnavailable);
+        return;
+      }
+      setStatusMessage(copy.winPending);
+      setPromoCode(null);
+      try {
+        const response = await fetch(`${apiBaseUrl}/api/v1/promo/claim`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            init_data: telegram.initData,
+            player: {
+              telegram_id: user.telegram_id,
+              username: user.username,
+              first_name: user.first_name,
+              last_name: user.last_name
+            },
+            moves: summary.moves,
+            board_state: summary.board,
+            locale,
+            theme
+          })
+        });
+        if (!response.ok) {
+          throw new Error("API error");
+        }
+        const data = await response.json();
+        setPromoCode(data.promo_code);
+        setStatusMessage(copy.winSuccess(data.promo_code));
+        telegram?.HapticFeedback?.notificationOccurred?.("success");
+      } catch (error) {
+        console.error("Promo API error", error);
+        setStatusMessage(copy.promoError);
+        telegram?.HapticFeedback?.notificationOccurred?.("error");
+      } finally {
+        //
+      }
+    },
+    [user, telegram, apiBaseUrl, copy, locale, theme]
+  );
 
   const handleLose = useCallback(() => {
-    setLastMessage(copy.lose);
+    setStatusMessage(copy.lose);
   }, [copy]);
 
   const handleDraw = useCallback(() => {
-    setLastMessage(copy.draw);
+    setStatusMessage(copy.draw);
   }, [copy]);
 
   const themeClass = theme === "dark" ? "theme-dark" : "theme-light";
@@ -97,6 +132,12 @@ function App() {
   return (
     <div className={`page ${themeClass}`}>
       <header className="hero">
+        <div>
+          <p className="eyebrow">{copy.subtitle}</p>
+          <h1>{copy.title}</h1>
+          <p className="muted">{copy.startHint}</p>
+          {statusMessage && <p className="status-banner">{statusMessage}</p>}
+        </div>
         <div className="controls">
           <div className="control-block">
             <span>{copy.languageLabel}</span>
@@ -138,12 +179,20 @@ function App() {
             <span className="chip-value">{userFullName}</span>
           </div>
 
-          <TicTacToe copy={gameCopy} onWin={requestPromoFromBot} onLose={handleLose} onDraw={handleDraw} />
+          <TicTacToe copy={gameCopy} onWin={submitWin} onLose={handleLose} onDraw={handleDraw} />
         </div>
 
         <div className="promo-column">
           <h2>{copy.promoTitle}</h2>
-          <p className="muted">{copy.promoInfo}</p>
+          {promoCode ? (
+            <div className="promo-card">
+              <p className="muted">{copy.promoSuccess}</p>
+              <div className="promo-code">{promoCode}</div>
+            </div>
+          ) : (
+            <p className="muted">{copy.promoInfo}</p>
+          )}
+          {!apiBaseUrl && <p className="muted warning">{copy.apiUnavailable}</p>}
         </div>
       </section>
     </div>

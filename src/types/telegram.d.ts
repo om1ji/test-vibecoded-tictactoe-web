@@ -10,6 +10,8 @@ interface TelegramHapticFeedback {
 interface TelegramWebApp {
   ready(): void;
   sendData(data: string): void;
+  initData?: string;
+  initDataUnsafe?: Record<string, unknown>;
   HapticFeedback?: TelegramHapticFeedback;
 }
 

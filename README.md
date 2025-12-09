@@ -1,6 +1,6 @@
 # Web Mini App
 
-React + Vite front-end that runs inside a Telegram Mini App. The bot builds a WebApp URL pointing here and expects the UI to request promo codes through `window.Telegram.WebApp.sendData`.
+React + Vite front-end that runs inside a Telegram Mini App. After each win it calls the Promo API directly (configured via `VITE_API_BASE_URL`) and shows the returned promo code inside the UI.
 
 ## Local development
 
@@ -16,6 +16,8 @@ The dev server runs on HTTPS (see below). For production builds:
 npm run build
 npm run preview   # serves the contents of dist/
 ```
+
+Create a `.env` (see `.env.example`) and point `VITE_API_BASE_URL` to your FastAPI deployment so the mini app can submit wins during development.
 
 ## HTTPS with mkcert
 

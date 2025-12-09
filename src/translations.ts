@@ -5,6 +5,7 @@ type TranslationShape = {
   subtitle: string;
   startHint: string;
   winPending: string;
+  winSuccess: (code: string) => string;
   lose: string;
   draw: string;
   playerTurn: string;
@@ -12,8 +13,11 @@ type TranslationShape = {
   actionPlayAgain: string;
   promoTitle: string;
   promoInfo: string;
-  promoRequested: string;
-  botUnavailable: string;
+  promoSuccess: string;
+  promoError: string;
+  apiUnavailable: string;
+  userUnknown: string;
+  initDataMissing: string;
   lightTheme: string;
   darkTheme: string;
   languageLabel: string;
@@ -25,16 +29,20 @@ export const translations: Record<LocaleKey, TranslationShape> = {
     title: "Тихий TikTacToe",
     subtitle: "Мини-приложение для Telegram. Легко, быстро и женственно оформлено.",
     startHint: "Сыграйте против лёгкого ИИ. Победа подарит промокод, а поражение — шанс попробовать снова.",
-    winPending: "Победа! Запрашиваю промокод у бота…",
+    winPending: "Победа! Запрашиваю промокод…",
+    winSuccess: (code) => `Промокод готов: ${code}`,
     lose: "Проигрыш. Попробуйте ещё раз — я верю в вас!",
     draw: "Ничья. Возможно, в следующий раз удача улыбнётся!",
     playerTurn: "Ваш ход",
     botTurn: "Ход соперника",
     actionPlayAgain: "Играть ещё раз",
-    promoTitle: "Промокоды придут от бота",
-    promoInfo: "После победы отправим заявку боту. Он пришлёт код в этот чат и сохранит его у себя.",
-    promoRequested: "Запрос отправили боту — проверьте чат, код уже прилетает ✨",
-    botUnavailable: "Не удалось обратиться к боту. Попробуйте обновить мини-приложение.",
+    promoTitle: "Ваш промокод появится здесь",
+    promoInfo: "Победите в игре, и мы запросим код на сервере. Он мгновенно появится ниже и будет доступен в боте.",
+    promoSuccess: "Можете делиться с подругами или сохранить для себя — код уже активен.",
+    promoError: "Сервер сейчас недоступен. Попробуйте ещё раз чуть позже.",
+    apiUnavailable: "API не настроен. Обратитесь к разработчику.",
+    userUnknown: "Не удалось определить профиль Telegram. Откройте мини-приложение заново из чата с ботом.",
+    initDataMissing: "Telegram не прислал initData. Перезагрузите мини-приложение.",
     lightTheme: "Светлая",
     darkTheme: "Тёмная",
     languageLabel: "Язык",
@@ -44,16 +52,20 @@ export const translations: Record<LocaleKey, TranslationShape> = {
     title: "Gentle TicTacToe",
     subtitle: "Telegram mini app — lightweight, quick, with a soft feminine vibe.",
     startHint: "Play a round versus a calm bot. Win to unlock a promo code, lose to try again.",
-    winPending: "Victory! Asking the bot for your promo code…",
+    winPending: "Victory! Requesting your promo code…",
+    winSuccess: (code) => `Promo code unlocked: ${code}`,
     lose: "Defeat. Hit play again — you are getting close!",
     draw: "Draw. Shuffle the grid again for another chance!",
     playerTurn: "Your move",
     botTurn: "Bot is thinking",
     actionPlayAgain: "Play again",
-    promoTitle: "Promo codes arrive from the bot",
-    promoInfo: "Each win sends a request to the bot. The code lands in your chat and stays on the server.",
-    promoRequested: "Promo request sent — keep an eye on the chat, the code is on the way ✨",
-    botUnavailable: "Could not reach the bot. Please reload the mini app and try again.",
+    promoTitle: "Your promo code will show up here",
+    promoInfo: "Win a round and we will ask the backend for your personal code. It appears instantly below and stays with the bot.",
+    promoSuccess: "Share it or keep it private — the code is already active.",
+    promoError: "Server unavailable. Please try again a little later.",
+    apiUnavailable: "Promo API is not configured. Contact the developer.",
+    userUnknown: "Could not determine your Telegram profile. Relaunch the app from the bot.",
+    initDataMissing: "Telegram did not provide initData. Reload the mini app.",
     lightTheme: "Light",
     darkTheme: "Dark",
     languageLabel: "Language",
