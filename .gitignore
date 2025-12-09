@@ -1,0 +1,8 @@
+# build artifacts
+dist/
+
+# dependencies
+node_modules/
+
+# local TLS material
+certs/*.pem
