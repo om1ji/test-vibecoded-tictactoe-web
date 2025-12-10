@@ -36,7 +36,6 @@ type Props = {
 
 export function TicTacToe({ copy, onWin, onLose, onDraw }: Props) {
   const [board, setBoard] = useState<CellValue[]>(Array(9).fill(null));
-  const [status, setStatus] = useState<string>("");
   const [isPlayerTurn, setIsPlayerTurn] = useState(true);
   const [isLocked, setIsLocked] = useState(false);
   const [moves, setMoves] = useState<number[]>([]);
@@ -50,14 +49,11 @@ export function TicTacToe({ copy, onWin, onLose, onDraw }: Props) {
     }
     setIsLocked(true);
     if (winner === "X") {
-      setStatus(copy.winPending);
       onWin({ board: [...board], moves: [...moves] });
     } else if (winner === "O") {
       onLose();
-      setStatus(copy.loseText);
     } else if (!winner && isBoardFull) {
       onDraw?.();
-      setStatus(copy.drawText);
     }
   }, [winner, isBoardFull, copy, onWin, onLose, onDraw, board, moves, isLocked]);
 
@@ -82,8 +78,6 @@ export function TicTacToe({ copy, onWin, onLose, onDraw }: Props) {
       return;
     }
 
-    console.log("Bruh")
-
     setBoard((current) => {
       const nextBoard = [...current];
       nextBoard[index] = "X";
@@ -91,15 +85,6 @@ export function TicTacToe({ copy, onWin, onLose, onDraw }: Props) {
     });
     setMoves((prev) => [...prev, index]);
     setIsPlayerTurn(false);
-    setStatus("");
-  };
-
-  const handleRestart = () => {
-    setBoard(Array(9).fill(null));
-    setIsPlayerTurn(true);
-    setIsLocked(false);
-    setStatus("");
-    setMoves([]);
   };
 
   return (
@@ -118,11 +103,6 @@ export function TicTacToe({ copy, onWin, onLose, onDraw }: Props) {
         ))}
       </div>
 
-      {(winner || isBoardFull) && (
-        <button className="outline-button" onClick={handleRestart}>
-          {copy.actionPlayAgain}
-        </button>
-      )}
     </div>
   );
 }

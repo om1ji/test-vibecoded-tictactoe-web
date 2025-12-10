@@ -1,4 +1,4 @@
-import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { jsx as _jsx } from "react/jsx-runtime";
 import { useEffect, useMemo, useState } from "react";
 const winningPatterns = [
     [0, 1, 2],
@@ -12,7 +12,6 @@ const winningPatterns = [
 ];
 export function TicTacToe({ copy, onWin, onLose, onDraw }) {
     const [board, setBoard] = useState(Array(9).fill(null));
-    const [status, setStatus] = useState("");
     const [isPlayerTurn, setIsPlayerTurn] = useState(true);
     const [isLocked, setIsLocked] = useState(false);
     const [moves, setMoves] = useState([]);
@@ -24,16 +23,13 @@ export function TicTacToe({ copy, onWin, onLose, onDraw }) {
         }
         setIsLocked(true);
         if (winner === "X") {
-            setStatus(copy.winPending);
             onWin({ board: [...board], moves: [...moves] });
         }
         else if (winner === "O") {
             onLose();
-            setStatus(copy.loseText);
         }
         else if (!winner && isBoardFull) {
             onDraw?.();
-            setStatus(copy.drawText);
         }
     }, [winner, isBoardFull, copy, onWin, onLose, onDraw, board, moves, isLocked]);
     useEffect(() => {
@@ -54,7 +50,6 @@ export function TicTacToe({ copy, onWin, onLose, onDraw }) {
         if (isLocked || board[index] !== null || !isPlayerTurn) {
             return;
         }
-        console.log("Bruh");
         setBoard((current) => {
             const nextBoard = [...current];
             nextBoard[index] = "X";
@@ -62,16 +57,8 @@ export function TicTacToe({ copy, onWin, onLose, onDraw }) {
         });
         setMoves((prev) => [...prev, index]);
         setIsPlayerTurn(false);
-        setStatus("");
     };
-    const handleRestart = () => {
-        setBoard(Array(9).fill(null));
-        setIsPlayerTurn(true);
-        setIsLocked(false);
-        setStatus("");
-        setMoves([]);
-    };
-    return (_jsxs("div", { className: "game-card", children: [_jsx("div", { className: "board", "aria-label": "TicTacToe grid", children: board.map((cell, index) => (_jsx("button", { className: `cell ${cell ? "filled" : ""}`, onClick: () => handleCellClick(index), disabled: Boolean(cell) || isLocked || !isPlayerTurn, "aria-label": `cell ${index}`, children: cell }, index))) }), (winner || isBoardFull) && (_jsx("button", { className: "outline-button", onClick: handleRestart, children: copy.actionPlayAgain }))] }));
+    return (_jsx("div", { className: "game-card", children: _jsx("div", { className: "board", "aria-label": "TicTacToe grid", children: board.map((cell, index) => (_jsx("button", { className: `cell ${cell ? "filled" : ""}`, onClick: () => handleCellClick(index), disabled: Boolean(cell) || isLocked || !isPlayerTurn, "aria-label": `cell ${index}`, children: cell }, index))) }) }));
 }
 const calculateWinner = (board) => {
     for (const [a, b, c] of winningPatterns) {

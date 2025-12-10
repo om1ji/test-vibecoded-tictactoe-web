@@ -1,4 +1,4 @@
-import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { TicTacToe } from "./components/TicTacToe";
 import { useLocalStorage } from "./hooks/useLocalStorage";
@@ -28,11 +28,11 @@ const parseUserFromInitData = (initData) => {
     }
     try {
         const params = new URLSearchParams(initData);
-        const userJson = params.get("user");
-        if (!userJson) {
+        const raw = params.get("user");
+        if (!raw) {
             return null;
         }
-        const parsed = JSON.parse(userJson);
+        const parsed = JSON.parse(raw);
         return {
             telegram_id: parsed.id,
             username: parsed.username,
@@ -49,16 +49,16 @@ const themes = ["light", "dark"];
 function App() {
     const payloadUser = useMemo(() => decodePayload(), []);
     const [locale, setLocale] = useLocalStorage("ttt_locale", fallbackLocale);
-    const [theme, setTheme] = useLocalStorage("ttt_theme", "light");
-    const [statusMessage, setStatusMessage] = useState("");
-    const [promoCode, setPromoCode] = useState(null);
+    const [theme, setTheme] = useLocalStorage("ttt_theme", "dark");
+    const [dialog, setDialog] = useState(null);
+    const [gameKey, setGameKey] = useState(0);
     const telegram = useMemo(() => window.Telegram?.WebApp, []);
     const initData = useMemo(() => {
         if (telegram?.initData) {
             return telegram.initData;
         }
-        const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get("tgWebAppData") ?? "";
+        const params = new URLSearchParams(window.location.search);
+        return params.get("tgWebAppData") ?? "";
     }, [telegram]);
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "";
     const copy = translations[locale] ?? translations[fallbackLocale];
@@ -72,35 +72,34 @@ function App() {
     }), [copy]);
     const initDataUser = useMemo(() => parseUserFromInitData(initData), [initData]);
     const user = payloadUser ?? initDataUser;
-    const userFullName = [user?.first_name, user?.last_name].filter(Boolean).join(" ") || user?.username || "гость";
+    const userFullName = [user?.first_name, user?.last_name].filter(Boolean).join(" ") || user?.username || "player";
     useEffect(() => {
         document.body.dataset.theme = theme;
     }, [theme]);
     useEffect(() => {
         telegram?.ready();
-        console.log(telegram?.initData);
     }, [telegram]);
+    const restartGame = useCallback(() => {
+        setGameKey((prev) => prev + 1);
+        setDialog(null);
+    }, []);
     const submitWin = useCallback(async (summary) => {
         if (!user?.telegram_id) {
-            setStatusMessage(copy.userUnknown);
+            setDialog({ type: "error", message: copy.userUnknown });
             return;
         }
         if (!initData) {
-            setStatusMessage(copy.initDataMissing);
+            setDialog({ type: "error", message: copy.initDataMissing });
             return;
         }
         if (!apiBaseUrl) {
-            setStatusMessage(copy.apiUnavailable);
+            setDialog({ type: "error", message: copy.apiUnavailable });
             return;
         }
-        setStatusMessage(copy.winPending);
-        setPromoCode(null);
         try {
             const response = await fetch(`${apiBaseUrl}/api/v1/promo/claim`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     init_data: initData,
                     player: {
@@ -119,26 +118,28 @@ function App() {
                 throw new Error("API error");
             }
             const data = await response.json();
-            setPromoCode(data.promo_code);
-            setStatusMessage(copy.winSuccess(data.promo_code));
+            setDialog({ type: "win", promoCode: data.promo_code, message: copy.winSuccess(data.promo_code) });
             telegram?.HapticFeedback?.notificationOccurred?.("success");
         }
         catch (error) {
             console.error("Promo API error", error);
-            setStatusMessage(copy.promoError);
+            setDialog({ type: "error", message: copy.promoError });
             telegram?.HapticFeedback?.notificationOccurred?.("error");
         }
-        finally {
-            //
-        }
-    }, [user, telegram, apiBaseUrl, copy, locale, theme]);
+    }, [user, initData, apiBaseUrl, copy, locale, theme, telegram]);
     const handleLose = useCallback(() => {
-        setStatusMessage(copy.lose);
-    }, [copy]);
+        setDialog({ type: "lose", message: copy.lose });
+        telegram?.HapticFeedback?.notificationOccurred?.("warning");
+    }, [copy, telegram]);
     const handleDraw = useCallback(() => {
-        setStatusMessage(copy.draw);
-    }, [copy]);
+        setDialog({ type: "draw", message: copy.draw });
+        telegram?.HapticFeedback?.notificationOccurred?.("warning");
+    }, [copy, telegram]);
     const themeClass = theme === "dark" ? "theme-dark" : "theme-light";
-    return (_jsxs("div", { className: `page ${themeClass}`, children: [_jsxs("header", { className: "hero", children: [_jsxs("div", { children: [_jsx("p", { className: "eyebrow", children: copy.subtitle }), _jsx("h1", { children: copy.title }), _jsx("p", { className: "muted", children: copy.startHint }), statusMessage && _jsx("p", { className: "status-banner", children: statusMessage })] }), _jsxs("div", { className: "controls", children: [_jsxs("div", { className: "control-block", children: [_jsx("span", { children: copy.languageLabel }), _jsx("div", { className: "segmented", children: availableLocales.map((loc) => (_jsx("button", { className: locale === loc ? "active" : "", onClick: () => setLocale(loc), type: "button", children: loc.toUpperCase() }, loc))) })] }), _jsxs("div", { className: "control-block", children: [_jsx("span", { children: copy.themeLabel }), _jsx("div", { className: "segmented", children: themes.map((value) => (_jsx("button", { className: theme === value ? "active" : "", onClick: () => setTheme(value), type: "button", children: value === "light" ? copy.lightTheme : copy.darkTheme }, value))) })] })] })] }), _jsxs("section", { className: "content", children: [_jsxs("div", { className: "game-column", children: [_jsxs("div", { className: "user-chip", children: [_jsx("span", { className: "chip-label", children: "\u0418\u0433\u0440\u043E\u043A" }), _jsx("span", { className: "chip-value", children: userFullName })] }), _jsx(TicTacToe, { copy: gameCopy, onWin: submitWin, onLose: handleLose, onDraw: handleDraw })] }), _jsxs("div", { className: "promo-column", children: [_jsx("h2", { children: copy.promoTitle }), promoCode ? (_jsxs("div", { className: "promo-card", children: [_jsx("p", { className: "muted", children: copy.promoSuccess }), _jsx("div", { className: "promo-code", children: promoCode })] })) : (_jsx("p", { className: "muted", children: copy.promoInfo })), !apiBaseUrl && _jsx("p", { className: "muted warning", children: copy.apiUnavailable })] })] })] }));
+    return (_jsxs("div", { className: `page minimal ${themeClass}`, children: [_jsx("div", { className: "title-banner", children: _jsx("h1", { children: copy.title }) }), _jsxs("div", { className: "game-panel", children: [_jsx("div", { className: "panel-top", children: _jsxs("div", { className: "tiny-controls", children: [availableLocales.map((loc) => (_jsx("button", { className: locale === loc ? "active" : "", onClick: () => setLocale(loc), children: loc.toUpperCase() }, loc))), themes.map((value) => (_jsx("button", { className: theme === value ? "active" : "", onClick: () => setTheme(value), children: value === "light" ? "☀️" : "🌙" }, value)))] }) }), _jsx(TicTacToe, { copy: gameCopy, onWin: submitWin, onLose: handleLose, onDraw: handleDraw }, gameKey), !apiBaseUrl && _jsx("p", { className: "muted warning center", children: copy.apiUnavailable })] }), dialog && (_jsx("div", { className: "overlay", children: _jsxs("div", { className: "dialog-card", children: [_jsx("p", { children: dialog.message }), dialog.type === "win" && (_jsxs(_Fragment, { children: [_jsx("div", { className: "promo-code", children: dialog.promoCode }), _jsx("button", { className: "secondary", onClick: () => {
+                                        if (navigator.clipboard && dialog.promoCode) {
+                                            navigator.clipboard.writeText(dialog.promoCode);
+                                        }
+                                    }, children: copy.copyCode })] })), _jsx("button", { className: "primary", onClick: restartGame, children: copy.actionPlayAgain })] }) }))] }));
 }
 export default App;

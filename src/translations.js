@@ -1,6 +1,6 @@
 export const translations = {
     ru: {
-        title: "Тихий TikTacToe",
+        title: "Крестики-нолики",
         subtitle: "Мини-приложение для Telegram. Легко, быстро и женственно оформлено.",
         startHint: "Сыграйте против лёгкого ИИ. Победа подарит промокод, а поражение — шанс попробовать снова.",
         winPending: "Победа! Запрашиваю промокод…",
@@ -10,20 +10,18 @@ export const translations = {
         playerTurn: "Ваш ход",
         botTurn: "Ход соперника",
         actionPlayAgain: "Играть ещё раз",
-        promoTitle: "Ваш промокод появится здесь",
         promoInfo: "Победите в игре, и мы запросим код на сервере. Он мгновенно появится ниже и будет доступен в боте.",
         promoSuccess: "Можете делиться с подругами или сохранить для себя — код уже активен.",
         promoError: "Сервер сейчас недоступен. Попробуйте ещё раз чуть позже.",
         apiUnavailable: "API не настроен. Обратитесь к разработчику.",
         userUnknown: "Не удалось определить профиль Telegram. Откройте мини-приложение заново из чата с ботом.",
         initDataMissing: "Telegram не прислал initData. Перезагрузите мини-приложение.",
+        copyCode: "Скопировать",
         lightTheme: "Светлая",
-        darkTheme: "Тёмная",
-        languageLabel: "Язык",
-        themeLabel: "Тема"
+        darkTheme: "Тёмная"
     },
     en: {
-        title: "Gentle TicTacToe",
+        title: "TicTacToe",
         subtitle: "Telegram mini app — lightweight, quick, with a soft feminine vibe.",
         startHint: "Play a round versus a calm bot. Win to unlock a promo code, lose to try again.",
         winPending: "Victory! Requesting your promo code…",
@@ -33,17 +31,15 @@ export const translations = {
         playerTurn: "Your move",
         botTurn: "Bot is thinking",
         actionPlayAgain: "Play again",
-        promoTitle: "Your promo code will show up here",
         promoInfo: "Win a round and we will ask the backend for your personal code. It appears instantly below and stays with the bot.",
         promoSuccess: "Share it or keep it private — the code is already active.",
         promoError: "Server unavailable. Please try again a little later.",
         apiUnavailable: "Promo API is not configured. Contact the developer.",
         userUnknown: "Could not determine your Telegram profile. Relaunch the app from the bot.",
         initDataMissing: "Telegram did not provide initData. Reload the mini app.",
+        copyCode: "Copy code",
         lightTheme: "Light",
-        darkTheme: "Dark",
-        languageLabel: "Language",
-        themeLabel: "Theme"
+        darkTheme: "Dark"
     }
 };
 export const fallbackLocale = "ru";
