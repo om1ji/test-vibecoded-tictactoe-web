@@ -18,6 +18,7 @@ type TranslationShape = {
   userUnknown: string;
   initDataMissing: string;
   copyCode: string;
+  copySuccess: string;
   lightTheme: string;
   darkTheme: string;
 };
@@ -41,6 +42,7 @@ export const translations: Record<LocaleKey, TranslationShape> = {
     userUnknown: "Не удалось определить профиль Telegram. Откройте мини-приложение заново из чата с ботом.",
     initDataMissing: "Telegram не прислал initData. Перезагрузите мини-приложение.",
     copyCode: "Скопировать",
+    copySuccess: "Промокод скопирован",
     lightTheme: "Светлая",
     darkTheme: "Тёмная"
   },
@@ -62,6 +64,7 @@ export const translations: Record<LocaleKey, TranslationShape> = {
     userUnknown: "Could not determine your Telegram profile. Relaunch the app from the bot.",
     initDataMissing: "Telegram did not provide initData. Reload the mini app.",
     copyCode: "Copy code",
+    copySuccess: "Promo code copied",
     lightTheme: "Light",
     darkTheme: "Dark"
   }

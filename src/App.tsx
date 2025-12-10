@@ -64,6 +64,7 @@ function App() {
   const [locale, setLocale] = useLocalStorage<LocaleKey>("ttt_locale", fallbackLocale);
   const [theme, setTheme] = useLocalStorage<Theme>("ttt_theme", "dark");
   const [dialog, setDialog] = useState<DialogState | null>(null);
+  const [toast, setToast] = useState("");
   const [gameKey, setGameKey] = useState(0);
   const telegram = useMemo(() => window.Telegram?.WebApp, []);
   const initData = useMemo(() => {
@@ -144,6 +145,12 @@ function App() {
         const data = await response.json();
         setDialog({ type: "win", promoCode: data.promo_code, message: copy.winReady });
         telegram?.HapticFeedback?.notificationOccurred?.("success");
+        if (navigator.clipboard && data.promo_code) {
+          navigator.clipboard.writeText(data.promo_code).then(() => {
+            setToast(copy.copySuccess);
+            setTimeout(() => setToast(""), 1500);
+          });
+        }
       } catch (error) {
         console.error("Promo API error", error);
         setDialog({ type: "error", message: copy.promoError });
@@ -195,20 +202,21 @@ function App() {
           <div className="dialog-card">
             <p>{dialog.message}</p>
             {dialog.type === "win" && (
-              <>
-                <div className="promo-code">{dialog.promoCode || "••••••••"}</div>
+              <div className="promo-code">
+                <span>{dialog.promoCode || ""}</span>
                 <button
-                  className="secondary"
-                  onClick={() => {
-                    if (navigator.clipboard && dialog.promoCode) {
-                      navigator.clipboard.writeText(dialog.promoCode);
-                    }
-                  }}
+                  className="copy-icon"
                   disabled={!dialog.promoCode}
+                  onClick={() => {
+                    if (!dialog.promoCode) return;
+                    navigator.clipboard.writeText(dialog.promoCode);
+                    setToast(copy.copySuccess);
+                    setTimeout(() => setToast(""), 1500);
+                  }}
                 >
-                  {copy.copyCode}
+                  {dialog.promoCode ? "📋" : <div className="spinner" />}
                 </button>
-              </>
+              </div>
             )}
             <button className="primary" onClick={restartGame}>
               {copy.actionPlayAgain}
@@ -216,6 +224,7 @@ function App() {
           </div>
         </div>
       )}
+      {toast && <div className="toast">{toast}</div>}
     </div>
   );
 }
