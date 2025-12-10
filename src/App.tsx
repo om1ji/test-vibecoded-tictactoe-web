@@ -57,6 +57,7 @@ type Theme = (typeof themes)[number];
 
 function App() {
   const payloadUser = useMemo(() => decodePayload(), []);
+  const [locale, setLocale] = useLocalStorage<LocaleKey>("ttt_locale", fallbackLocale);
   const [theme, setTheme] = useLocalStorage<Theme>("ttt_theme", "light");
   const [statusMessage, setStatusMessage] = useState("");
   const [promoCode, setPromoCode] = useState<string | null>(null);
@@ -84,7 +85,6 @@ function App() {
   );
   const initDataUser = useMemo(() => parseUserFromInitData(initData), [initData]);
   const user = payloadUser ?? initDataUser;
-  const [locale, setLocale] = useLocalStorage<LocaleKey>("ttt_locale", fallbackLocale);
   const userFullName = [user?.first_name, user?.last_name].filter(Boolean).join(" ") || user?.username || "гость";
 
   useEffect(() => {

@@ -54,6 +54,7 @@ export function TicTacToe({ copy, onWin, onLose, onDraw }) {
         if (isLocked || board[index] !== null || !isPlayerTurn) {
             return;
         }
+        console.log("Bruh");
         setBoard((current) => {
             const nextBoard = [...current];
             nextBoard[index] = "X";
@@ -70,7 +71,7 @@ export function TicTacToe({ copy, onWin, onLose, onDraw }) {
         setStatus("");
         setMoves([]);
     };
-    return (_jsxs("div", { className: "game-card", children: [_jsx("div", { className: "board", "aria-label": "TicTacToe grid", children: board.map((cell, index) => (_jsx("button", { className: `cell ${cell ? "filled" : ""}`, onClick: () => handleCellClick(index), disabled: Boolean(cell) || isLocked || !isPlayerTurn, "aria-label": `cell ${index}`, children: cell }, index))) }), _jsx("p", { className: "status-text", children: status || (isPlayerTurn ? copy.playerTurn : copy.botTurn) }), (winner || isBoardFull) && (_jsx("button", { className: "outline-button", onClick: handleRestart, children: copy.actionPlayAgain }))] }));
+    return (_jsxs("div", { className: "game-card", children: [_jsx("div", { className: "board", "aria-label": "TicTacToe grid", children: board.map((cell, index) => (_jsx("button", { className: `cell ${cell ? "filled" : ""}`, onClick: () => handleCellClick(index), disabled: Boolean(cell) || isLocked || !isPlayerTurn, "aria-label": `cell ${index}`, children: cell }, index))) }), (winner || isBoardFull) && (_jsx("button", { className: "outline-button", onClick: handleRestart, children: copy.actionPlayAgain }))] }));
 }
 const calculateWinner = (board) => {
     for (const [a, b, c] of winningPatterns) {
