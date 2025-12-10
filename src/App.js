@@ -96,6 +96,7 @@ function App() {
             setDialog({ type: "error", message: copy.apiUnavailable });
             return;
         }
+        setDialog({ type: "win", promoCode: "", message: copy.winPending });
         try {
             const response = await fetch(`${apiBaseUrl}/api/v1/promo/claim`, {
                 method: "POST",
@@ -118,7 +119,7 @@ function App() {
                 throw new Error("API error");
             }
             const data = await response.json();
-            setDialog({ type: "win", promoCode: data.promo_code, message: copy.winSuccess(data.promo_code) });
+            setDialog({ type: "win", promoCode: data.promo_code, message: copy.winReady });
             telegram?.HapticFeedback?.notificationOccurred?.("success");
         }
         catch (error) {
@@ -136,10 +137,10 @@ function App() {
         telegram?.HapticFeedback?.notificationOccurred?.("warning");
     }, [copy, telegram]);
     const themeClass = theme === "dark" ? "theme-dark" : "theme-light";
-    return (_jsxs("div", { className: `page minimal ${themeClass}`, children: [_jsx("div", { className: "title-banner", children: _jsx("h1", { children: copy.title }) }), _jsxs("div", { className: "game-panel", children: [_jsx("div", { className: "panel-top", children: _jsxs("div", { className: "tiny-controls", children: [availableLocales.map((loc) => (_jsx("button", { className: locale === loc ? "active" : "", onClick: () => setLocale(loc), children: loc.toUpperCase() }, loc))), themes.map((value) => (_jsx("button", { className: theme === value ? "active" : "", onClick: () => setTheme(value), children: value === "light" ? "☀️" : "🌙" }, value)))] }) }), _jsx(TicTacToe, { copy: gameCopy, onWin: submitWin, onLose: handleLose, onDraw: handleDraw }, gameKey), !apiBaseUrl && _jsx("p", { className: "muted warning center", children: copy.apiUnavailable })] }), dialog && (_jsx("div", { className: "overlay", children: _jsxs("div", { className: "dialog-card", children: [_jsx("p", { children: dialog.message }), dialog.type === "win" && (_jsxs(_Fragment, { children: [_jsx("div", { className: "promo-code", children: dialog.promoCode }), _jsx("button", { className: "secondary", onClick: () => {
+    return (_jsxs("div", { className: `page minimal ${themeClass}`, children: [_jsx("div", { className: "title-banner", children: _jsx("h1", { children: copy.title }) }), _jsxs("div", { className: "game-panel", children: [_jsx("div", { className: "panel-top", children: _jsxs("div", { className: "tiny-controls", children: [availableLocales.map((loc) => (_jsx("button", { className: locale === loc ? "active" : "", onClick: () => setLocale(loc), children: loc.toUpperCase() }, loc))), themes.map((value) => (_jsx("button", { className: theme === value ? "active" : "", onClick: () => setTheme(value), children: value === "light" ? "☀️" : "🌙" }, value)))] }) }), _jsx(TicTacToe, { copy: gameCopy, onWin: submitWin, onLose: handleLose, onDraw: handleDraw }, gameKey), !apiBaseUrl && _jsx("p", { className: "muted warning center", children: copy.apiUnavailable })] }), dialog && (_jsx("div", { className: "overlay", children: _jsxs("div", { className: "dialog-card", children: [_jsx("p", { children: dialog.message }), dialog.type === "win" && (_jsxs(_Fragment, { children: [_jsx("div", { className: "promo-code", children: dialog.promoCode || "••••••••" }), _jsx("button", { className: "secondary", onClick: () => {
                                         if (navigator.clipboard && dialog.promoCode) {
                                             navigator.clipboard.writeText(dialog.promoCode);
                                         }
-                                    }, children: copy.copyCode })] })), _jsx("button", { className: "primary", onClick: restartGame, children: copy.actionPlayAgain })] }) }))] }));
+                                    }, disabled: !dialog.promoCode, children: copy.copyCode })] })), _jsx("button", { className: "primary", onClick: restartGame, children: copy.actionPlayAgain })] }) }))] }));
 }
 export default App;

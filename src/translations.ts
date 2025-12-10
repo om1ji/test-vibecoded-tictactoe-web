@@ -5,7 +5,7 @@ type TranslationShape = {
   subtitle: string;
   startHint: string;
   winPending: string;
-  winSuccess: (code: string) => string;
+  winReady: string;
   lose: string;
   draw: string;
   playerTurn: string;
@@ -27,8 +27,8 @@ export const translations: Record<LocaleKey, TranslationShape> = {
     title: "Крестики-нолики",
     subtitle: "Мини-приложение для Telegram. Легко, быстро и женственно оформлено.",
     startHint: "Сыграйте против лёгкого ИИ. Победа подарит промокод, а поражение — шанс попробовать снова.",
-    winPending: "Победа! Запрашиваю промокод…",
-    winSuccess: (code) => `Промокод готов: ${code}`,
+  winPending: "Победа! Запрашиваю промокод…",
+  winReady: "Вы выиграли! Держите промокод",
     lose: "Проигрыш. Попробуйте ещё раз — я верю в вас!",
     draw: "Ничья. Возможно, в следующий раз удача улыбнётся!",
     playerTurn: "Ваш ход",
@@ -48,8 +48,8 @@ export const translations: Record<LocaleKey, TranslationShape> = {
     title: "TicTacToe",
     subtitle: "Telegram mini app — lightweight, quick, with a soft feminine vibe.",
     startHint: "Play a round versus a calm bot. Win to unlock a promo code, lose to try again.",
-    winPending: "Victory! Requesting your promo code…",
-    winSuccess: (code) => `Promo code unlocked: ${code}`,
+  winPending: "Victory! Requesting your promo code…",
+  winReady: "You won! Here is your promo code",
     lose: "Defeat. Hit play again — you are getting close!",
     draw: "Draw. Shuffle the grid again for another chance!",
     playerTurn: "Your move",

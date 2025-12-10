@@ -119,6 +119,7 @@ function App() {
         setDialog({ type: "error", message: copy.apiUnavailable });
         return;
       }
+      setDialog({ type: "win", promoCode: "", message: copy.winPending });
       try {
         const response = await fetch(`${apiBaseUrl}/api/v1/promo/claim`, {
           method: "POST",
@@ -141,7 +142,7 @@ function App() {
           throw new Error("API error");
         }
         const data = await response.json();
-        setDialog({ type: "win", promoCode: data.promo_code, message: copy.winSuccess(data.promo_code) });
+        setDialog({ type: "win", promoCode: data.promo_code, message: copy.winReady });
         telegram?.HapticFeedback?.notificationOccurred?.("success");
       } catch (error) {
         console.error("Promo API error", error);
@@ -195,7 +196,7 @@ function App() {
             <p>{dialog.message}</p>
             {dialog.type === "win" && (
               <>
-                <div className="promo-code">{dialog.promoCode}</div>
+                <div className="promo-code">{dialog.promoCode || "••••••••"}</div>
                 <button
                   className="secondary"
                   onClick={() => {
@@ -203,6 +204,7 @@ function App() {
                       navigator.clipboard.writeText(dialog.promoCode);
                     }
                   }}
+                  disabled={!dialog.promoCode}
                 >
                   {copy.copyCode}
                 </button>
