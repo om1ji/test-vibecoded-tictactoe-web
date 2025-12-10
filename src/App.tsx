@@ -29,17 +29,45 @@ const decodePayload = (): UserPayload | null => {
   }
 };
 
+const parseUserFromInitData = (initData: string | null): UserPayload | null => {
+  if (!initData) {
+    return null;
+  }
+  try {
+    const params = new URLSearchParams(initData);
+    const userJson = params.get("user");
+    if (!userJson) {
+      return null;
+    }
+    const parsed = JSON.parse(userJson) as { id: number; username?: string; first_name?: string; last_name?: string };
+    return {
+      telegram_id: parsed.id,
+      username: parsed.username,
+      first_name: parsed.first_name,
+      last_name: parsed.last_name
+    };
+  } catch {
+    return null;
+  }
+};
+
 const availableLocales: LocaleKey[] = ["ru", "en"];
 const themes = ["light", "dark"] as const;
 type Theme = (typeof themes)[number];
 
 function App() {
-  const user = useMemo(() => decodePayload(), []);
-  const [locale, setLocale] = useLocalStorage<LocaleKey>("ttt_locale", fallbackLocale);
+  const payloadUser = useMemo(() => decodePayload(), []);
   const [theme, setTheme] = useLocalStorage<Theme>("ttt_theme", "light");
   const [statusMessage, setStatusMessage] = useState("");
   const [promoCode, setPromoCode] = useState<string | null>(null);
   const telegram = useMemo(() => window.Telegram?.WebApp, []);
+  const initData = useMemo(() => {
+    if (telegram?.initData) {
+      return telegram.initData;
+    }
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get("tgWebAppData") ?? "";
+  }, [telegram]);
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "";
 
   const copy = translations[locale] ?? translations[fallbackLocale];
@@ -54,6 +82,9 @@ function App() {
     }),
     [copy]
   );
+  const initDataUser = useMemo(() => parseUserFromInitData(initData), [initData]);
+  const user = payloadUser ?? initDataUser;
+  const [locale, setLocale] = useLocalStorage<LocaleKey>("ttt_locale", fallbackLocale);
   const userFullName = [user?.first_name, user?.last_name].filter(Boolean).join(" ") || user?.username || "гость";
 
   useEffect(() => {
@@ -71,7 +102,7 @@ function App() {
         setStatusMessage(copy.userUnknown);
         return;
       }
-      if (!telegram?.initData) {
+      if (!initData) {
         setStatusMessage(copy.initDataMissing);
         return;
       }
@@ -88,7 +119,7 @@ function App() {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            init_data: telegram.initData,
+            init_data: initData,
             player: {
               telegram_id: user.telegram_id,
               username: user.username,
